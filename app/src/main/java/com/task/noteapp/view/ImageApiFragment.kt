@@ -5,56 +5,87 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.GridView
+import android.widget.Toast
+import androidx.core.widget.addTextChangedListener
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
+import com.bumptech.glide.RequestManager
 import com.task.noteapp.R
+import com.task.noteapp.adapter.ImageRecyclerAdapter
+import com.task.noteapp.databinding.FragmentImageApiBinding
+import com.task.noteapp.util.Status
+import com.task.noteapp.viewmodel.NoteViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class ImageApiFragment @Inject constructor(
+    val imageRecyclerAdapter: ImageRecyclerAdapter
+): Fragment(R.layout.fragment_image_api) {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [ImageApiFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class ImageApiFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+    lateinit var viewModel: NoteViewModel
+    private var fragmentBinding: FragmentImageApiBinding? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_image_api, container, false)
-    }
+        viewModel = ViewModelProvider(requireActivity()).get(NoteViewModel::class.java)
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ImageApiFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ImageApiFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+        val binding = FragmentImageApiBinding.bind(view)
+        fragmentBinding = binding
+
+        var job: Job? = null
+        binding.searchText.addTextChangedListener {
+            job?.cancel()
+            job = lifecycleScope.launch {
+                delay(1000)
+                it?.let {
+                    if(it.toString().isNotEmpty()){
+                        viewModel.searchForImage(it.toString())
+                    }
                 }
             }
+        }
+
+        subscribeToObservers()
+
+        binding.imageRecyclerView.adapter = imageRecyclerAdapter
+        binding.imageRecyclerView.layoutManager = GridLayoutManager(requireContext(), 4)
+        imageRecyclerAdapter.setOnItemClickListener {
+            viewModel.setSelectedImage(it)
+            findNavController().popBackStack()
+        }
+
+    }
+
+    private fun subscribeToObservers(){
+        viewModel.imageList.observe(viewLifecycleOwner, Observer {
+            when(it.status){
+                Status.SUCCESS -> {
+                    val urls = it.data?.hits?.map { imageResult ->
+                        imageResult.previewURL
+                    }
+
+                    imageRecyclerAdapter.imageList = urls ?: listOf()
+
+                    fragmentBinding?.progressBar?.visibility = View.GONE
+
+                }
+
+                Status.ERROR -> {
+                    Toast.makeText(requireContext(), it.message ?: "Error", Toast.LENGTH_LONG)
+                    fragmentBinding?.progressBar?.visibility = View.GONE
+                }
+
+                Status.LOADING -> {
+                    fragmentBinding?.progressBar?.visibility = View.VISIBLE
+                }
+            }
+        })
     }
 }

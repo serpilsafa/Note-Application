@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">NoteApp</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- Fragment Detail -->
+    <string name="note_title">Note Title</string>
+    <string name="note_detail">Write your note</string>
+    <string name="note_date">Recorded Date</string>
+    <string name="note_save_button">Save</string>
+
+
+    <string name="search_image">Search Image</string>
+
+
 </resources>

@@ -1,3 +1,7 @@
 package com.task.noteapp.model
 
-data class ImageResponse()
+data class ImageResponse(
+    val hits: List<ImageResult>,
+    val total: Int,
+    val totalHits: Int
+)
