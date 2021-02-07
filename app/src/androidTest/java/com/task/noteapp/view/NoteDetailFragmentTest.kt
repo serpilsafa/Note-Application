@@ -19,10 +19,14 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito
+import org.mockito.Mockito.verify
+import java.time.Clock
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import javax.inject.Inject
 
 @MediumTest
@@ -44,13 +48,13 @@ class NoteDetailFragmentTest {
         hiltRule.inject()
     }
 
-    @Ignore
     @Test
     fun testNavigationFromNoteDetailToImageAPI(){
         val navController = Mockito.mock(NavController::class.java)
 
         launchFragmentInHiltContainer<NoteDetailFragment>(
-            factory = fragmentFactory){
+            factory = fragmentFactory
+        ){
 
             Navigation.setViewNavController(requireView(), navController)
         }
@@ -60,7 +64,6 @@ class NoteDetailFragmentTest {
         Mockito.verify(navController).navigate(NoteDetailFragmentDirections.actionNoteDetailFragmentToImageApiFragment())
     }
 
-    @Ignore
     @Test
     fun testOnBackPressed(){
 
@@ -68,11 +71,11 @@ class NoteDetailFragmentTest {
         launchFragmentInHiltContainer<NoteDetailFragment>(
             factory = fragmentFactory
         ) {
-            Navigation.setViewNavController(requireView(),navController)
+            Navigation.setViewNavController(requireView(), navController)
         }
 
-        pressBack()
-        Mockito.verify(navController).popBackStack()
+        Espresso.pressBack()
+        verify(navController).popBackStack()
     }
 
     @Test
@@ -85,12 +88,24 @@ class NoteDetailFragmentTest {
             viewModel = testViewModel
         }
 
-        Espresso.onView(withId(R.id.title_textView)).perform(replaceText("Shopping"))
-        Espresso.onView(withId(R.id.detail_textView)).perform(replaceText("It is a note"))
+        Espresso.onView(withId(R.id.detail_title_textView)).perform(replaceText("Shopping"))
+        Espresso.onView(withId(R.id.detail_detail_textView)).perform(replaceText("It is a note"))
         Espresso.onView(withId(R.id.save_button)).perform(click())
 
+        
+        val current = LocalDateTime.now()
+        val instantTime= current.toString().substring(0, 10)
+
+         //val instantTime = "2021-02-07"
+
         assertThat(testViewModel.noteList.getOrAwaitValue()).contains(
-            Note(1,"Shopping","It is a note","",false,"")
+            Note(
+                title = "Shopping",
+                detail = "It is a note",
+                date = instantTime,
+                edited = false,
+                imgURL = ""
+            )
         )
     }
 

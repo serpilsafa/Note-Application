@@ -55,7 +55,7 @@ class NoteFragment @Inject constructor(
         ItemTouchHelper(swipeCallBack).attachToRecyclerView(binding.recyclerViewNote)
 
 
-        binding.fab.setOnClickListener { view ->
+        binding.fab.setOnClickListener {
             findNavController().navigate(NoteFragmentDirections.actionNoteFragmentToNoteDetailFragment())
         }
 

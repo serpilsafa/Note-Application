@@ -31,8 +31,6 @@ class NoteDetailFragment @Inject constructor(
 
     private var fragmentBinding: FragmentNoteDetailBinding? = null
     lateinit var viewModel: NoteViewModel
-
-    private val args: NoteDetailFragmentArgs by navArgs()
     private var noteId:Int = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -58,11 +56,11 @@ class NoteDetailFragment @Inject constructor(
 
         requireActivity().onBackPressedDispatcher.addCallback(callback)
 
-        noteId = args.noteId
-        if (noteId != 0 && noteId != null){
-            println("note id: ${noteId}, noteListsize: ${viewModel.noteList.value}")
-            viewModel.getNote(noteId!!).observe(viewLifecycleOwner, Observer {
-                println("note: $it, noteid: $noteId")
+        arguments?.let {
+            noteId = NoteDetailFragmentArgs.fromBundle(it).noteId
+        }
+        if (noteId != 0 ){
+            viewModel.getNote(noteId).observe(viewLifecycleOwner, Observer {
                 glide.load(it.imgURL).into(binding.imageView)
                 binding.detailTitleTextView.setText(it.title)
                 binding.detailDetailTextView.setText(it.detail)
@@ -73,7 +71,7 @@ class NoteDetailFragment @Inject constructor(
 
 
         binding.saveButton.setOnClickListener {
-            if (noteId != 0 && noteId != null){
+            if (noteId != 0 ){
                 viewModel.updateNote(noteId ?: 0,
                         binding.detailTitleTextView.text.toString(),
                         binding.detailDetailTextView.text.toString(),
@@ -108,6 +106,7 @@ class NoteDetailFragment @Inject constructor(
                 Status.ERROR->{
                     Toast.makeText(requireContext(), it.message?: "Error", Toast.LENGTH_SHORT).show()
                 }
+                else -> Toast.makeText(requireContext(), it.message?: "Error", Toast.LENGTH_SHORT).show()
             }
         })
 
