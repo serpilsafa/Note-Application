@@ -9,6 +9,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.room.util.StringUtil
 import com.task.noteapp.model.ImageResponse
 import com.task.noteapp.model.Note
 import com.task.noteapp.repo.NoteRepositoryInterface

@@ -92,7 +92,7 @@ class NoteDetailFragmentTest {
         Espresso.onView(withId(R.id.detail_detail_textView)).perform(replaceText("It is a note"))
         Espresso.onView(withId(R.id.save_button)).perform(click())
 
-        
+
         val current = LocalDateTime.now()
         val instantTime= current.toString().substring(0, 10)
 
